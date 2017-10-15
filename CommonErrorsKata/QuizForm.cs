@@ -1,10 +1,10 @@
 ﻿using CommonErrorsKata.Shared;
 using System.IO;
-using System.Linq;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace CommonErrorsKata
 {
@@ -13,7 +13,7 @@ namespace CommonErrorsKata
         private readonly AnswerQueue<TrueFalseAnswer> answerQueue;
         private readonly string[] files;
         private readonly SynchronizationContext synchronizationContext;
-        private int i = 100;
+        private int percentageTimer = 100;
         private string currentBaseName = null;
         private readonly string[] possibleAnswers = null;
 
@@ -21,8 +21,8 @@ namespace CommonErrorsKata
         {
             InitializeComponent();
             synchronizationContext = SynchronizationContext.Current;
-            files = System.IO.Directory.GetFiles(Environment.CurrentDirectory +  @"..\..\..\ErrorPics");
-            possibleAnswers = new string[] { "Missing File", "null instance", "divide by zero" };
+            files = Directory.GetFiles(Environment.CurrentDirectory +  @"..\..\..\ErrorPics");
+            possibleAnswers = new string[] { "missing file", "null instance", "divide by zero" };
             lstAnswers.DataSource = possibleAnswers;
             answerQueue = new AnswerQueue<TrueFalseAnswer>(15);
             Next();
@@ -33,9 +33,9 @@ namespace CommonErrorsKata
         {
             await Task.Run(() =>
             {
-                for (i = 100; i > 0; i--)
+                for (percentageTimer = 100; percentageTimer > 0; percentageTimer--)
                 {
-                    UpdateProgress(i);
+                    UpdateProgress(percentageTimer);
                     Thread.Sleep(50);
                 }
                 Message("Need to be quicker on your feet next time!  Try again...");
@@ -44,10 +44,22 @@ namespace CommonErrorsKata
 
         private void LstAnswers_Click(object sender, EventArgs e)
         {
-            i = 100;
-            var tokens = currentBaseName.Split(' ');
+            percentageTimer = 100;
+            //var tokens = currentBaseName.Split(' ');
             //TODO:  Figure out what is a valid answer.
-            answerQueue.Enqueue(new TrueFalseAnswer(true));
+
+            foreach (var answer in possibleAnswers)
+            {
+                if (currentBaseName == answer)
+                {
+                    Console.WriteLine(answer);
+                    answerQueue.Enqueue(new TrueFalseAnswer(true));
+                    
+                }
+                else answerQueue.Enqueue(new TrueFalseAnswer(false));
+            }
+
+            //answerQueue.Enqueue(new TrueFalseAnswer(true));
             Next();
         }
 
@@ -61,7 +73,7 @@ namespace CommonErrorsKata
             }
             label1.Text = answerQueue.Grade.ToString() + "%";
             var file = files.GetRandom();
-            currentBaseName= Path.GetFileName(file);
+            currentBaseName= Path.GetFileNameWithoutExtension(file);
             pbImage.ImageLocation = file;
         }
 
